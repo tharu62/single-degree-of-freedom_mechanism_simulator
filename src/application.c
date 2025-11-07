@@ -1,60 +1,113 @@
 #include "raylib.h"
-#include "Components.h"
+#include "math.h"
+#include "vector2d.h"
 
 #define ABSOLUTE_PATH "C:/Users/Deshan/Documents/Code/C/single-degree-of-freedom_mechanism_simulator/"
+
+int screenWidth = 1280;
+int screenHeight = 720;
+
+// Blueprint Color Scheme
+Color RoyaleBlue = {48, 87, 225};
+Color LavanderBlue = {206, 216, 247};
+Color ResolutionBlue = {0, 32, 130};
+
+void draw_margins(){
+    DrawRectangle(0, 0, screenWidth, 5, BLUE);
+    DrawRectangle(0, 5, 5, screenHeight - 10, BLUE);
+    DrawRectangle(screenWidth - 5, 5, 5, screenHeight - 10, BLUE);
+    DrawRectangle(0, screenHeight - 5, screenWidth, 5, BLUE);
+}
+
+void draw_legend(){
+    DrawRectangle( 10, 10, 250, 113, Fade(LavanderBlue, 0.5f));
+    DrawRectangleLines( 10, 10, 250, 113, LavanderBlue);
+    DrawText("Free 2d camera controls:", 20, 20, 10, BLACK);
+    DrawText("- Right/Left to move Offset", 40, 40, 10, BLACK);
+    DrawText("- Mouse Wheel to Zoom in-out", 40, 60, 10, BLACK);
+    DrawText("- A / S to Rotate", 40, 80, 10, BLACK);
+    DrawText("- R to reset Zoom and Rotation", 40, 100, 10, BLACK);
+}
 
 void SDFMecSim()
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 1280;
-    const int screenHeight = 720;
 
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "SDF Mec Sim");
-    
-    // Blueprint Color Scheme
-    Color RoyaleBlue = {48, 87, 225};
-    Color LavanderBlue = {206, 216, 247};
-    Color ResolutionBlue = {0, 32, 130};
 
-    // Component Truss = truss();
-    Texture2D sprite = LoadTexture("resources/sprites/Long_truss.png");
+    Rectangle player = { 400, 280, 40, 40 };
 
-    int frameWidth = sprite.width;
-    int frameHeight = sprite.height;
+    Camera2D camera = { 0 };
+    // camera.target = (Vector2){ player.x + 20.0f, player.y + 20.0f };
+    camera.target = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
+    camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
+    camera.rotation = 0.0f;
+    camera.zoom = 1.0f;
 
-    // Source rectangle (part of the texture to use for drawing)
-    Rectangle sourceRec = { 0.0f, 0.0f, (float)frameWidth, (float)frameHeight };
-
-    // Destination rectangle (screen rectangle where drawing part of texture)
-    Rectangle destRec = { screenWidth, screenHeight, frameWidth/2.0f, frameHeight/2.0f };
-
-    // Origin of the texture (rotation/scale point), it's relative to destination rectangle size
-    Vector2 origin = { (float)frameWidth, (float)frameHeight };
-
-    int rotation = 0;
-
-    SetTargetFPS(60);                   // Set the sim to run at 60 frames-per-second
+    SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
     // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
+    while (!WindowShouldClose())        // Detect window close button or ESC key
     {
         // Update
         //----------------------------------------------------------------------------------
-        // rotation++;
+        // Player movement
+        if (IsKeyDown(KEY_RIGHT)) player.x += 2;
+        else if (IsKeyDown(KEY_LEFT)) player.x -= 2;
+
+        // Camera target follows player
+        camera.target = (Vector2){ player.x + 20, player.y + 20 };
+
+        // Camera rotation controls
+        if (IsKeyDown(KEY_A)) camera.rotation--;
+        else if (IsKeyDown(KEY_S)) camera.rotation++;
+
+        // Camera zoom controls
+        // Uses log scaling to provide consistent zoom speed
+        camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove()*0.1f));
+
+        if (camera.zoom > 3.0f) camera.zoom = 3.0f;
+        else if (camera.zoom < 0.1f) camera.zoom = 0.1f;
+
+        // Camera reset (zoom and rotation)
+        if (IsKeyPressed(KEY_R))
+        {
+            camera.zoom = 1.0f;
+        }
         //----------------------------------------------------------------------------------
 
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
-             
-            ClearBackground(RoyaleBlue);
 
-            DrawTexturePro(sprite, sourceRec, destRec, origin, (float)rotation, WHITE);
-            // DrawLine((int)destRec.x, 0, (int)destRec.x, screenHeight, GRAY);
-            // DrawLine(0, (int)destRec.y, screenWidth, (int)destRec.y, GRAY);
-            // DrawText("test", 190, 200, 20, BLACK);
+            ClearBackground(RoyaleBlue);
+            
+            if (IsWindowResized() && !IsWindowFullscreen())
+            {
+                screenWidth = GetScreenWidth();
+                screenHeight = GetScreenHeight();
+                camera.target = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
+                camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
+            }
+
+            BeginMode2D(camera);
+
+                DrawRectangleRec(player, RED);
+                DrawRectangle(-6000, 320, 13000, 8000, DARKGRAY);
+
+                DrawLine((int)camera.target.x, -screenHeight*10, (int)camera.target.x, screenHeight*10, GREEN);
+                DrawLine(-screenWidth*10, (int)camera.target.y, screenWidth*10, (int)camera.target.y, GREEN);
+
+            EndMode2D();
+
+            // bordi
+            draw_margins();
+
+            // legenda
+            draw_legend();
 
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -62,8 +115,8 @@ void SDFMecSim()
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    UnloadTexture(sprite); 
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
+    return;
 }
