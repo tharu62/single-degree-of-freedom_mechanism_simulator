@@ -2,8 +2,6 @@
 #include "math.h"
 #include "vector2d.h"
 
-#define ABSOLUTE_PATH "C:/Users/Deshan/Documents/Code/C/single-degree-of-freedom_mechanism_simulator/"
-
 int screenWidth = 1280;
 int screenHeight = 720;
 
@@ -12,22 +10,8 @@ Color RoyaleBlue = {48, 87, 225};
 Color LavanderBlue = {206, 216, 247};
 Color ResolutionBlue = {0, 32, 130};
 
-void draw_margins(){
-    DrawRectangle(0, 0, screenWidth, 5, BLUE);
-    DrawRectangle(0, 5, 5, screenHeight - 10, BLUE);
-    DrawRectangle(screenWidth - 5, 5, 5, screenHeight - 10, BLUE);
-    DrawRectangle(0, screenHeight - 5, screenWidth, 5, BLUE);
-}
-
-void draw_legend(){
-    DrawRectangle( 10, 10, 250, 113, Fade(LavanderBlue, 0.5f));
-    DrawRectangleLines( 10, 10, 250, 113, LavanderBlue);
-    DrawText("Free 2d camera controls:", 20, 20, 10, BLACK);
-    DrawText("- Right/Left to move Offset", 40, 40, 10, BLACK);
-    DrawText("- Mouse Wheel to Zoom in-out", 40, 60, 10, BLACK);
-    DrawText("- A / S to Rotate", 40, 80, 10, BLACK);
-    DrawText("- R to reset Zoom and Rotation", 40, 100, 10, BLACK);
-}
+void draw_margins();
+void draw_legend();
 
 void SDFMecSim()
 {
@@ -89,6 +73,7 @@ void SDFMecSim()
                 camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
             }
 
+            // drawing on screen
             BeginMode2D(camera);
 
                 DrawRectangleRec(player, RED);
@@ -99,10 +84,7 @@ void SDFMecSim()
 
             EndMode2D();
 
-            // bordi
             draw_margins();
-
-            // legenda
             draw_legend();
 
         EndDrawing();
@@ -115,4 +97,21 @@ void SDFMecSim()
     //--------------------------------------------------------------------------------------
 
     return;
+}
+
+void draw_margins(){
+    DrawRectangle(0, 0, screenWidth, 5, BLUE);
+    DrawRectangle(0, 5, 5, screenHeight - 10, BLUE);
+    DrawRectangle(screenWidth - 5, 5, 5, screenHeight - 10, BLUE);
+    DrawRectangle(0, screenHeight - 5, screenWidth, 5, BLUE);
+}
+
+void draw_legend(){
+    DrawRectangle( 10, 10, 250, 113, Fade(LavanderBlue, 0.5f));
+    DrawRectangleLines( 10, 10, 250, 113, LavanderBlue);
+    DrawText("Free 2d camera controls:", 20, 20, 10, BLACK);
+    DrawText("- Right/Left to move Offset", 40, 40, 10, BLACK);
+    DrawText("- Mouse Wheel to Zoom in-out", 40, 60, 10, BLACK);
+    DrawText("- A / S to Rotate", 40, 80, 10, BLACK);
+    DrawText("- R to reset Zoom and Rotation", 40, 100, 10, BLACK);
 }

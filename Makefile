@@ -48,6 +48,13 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
+run:
+ifeq ($(OS),Windows_NT)
+	@sim.exe
+else
+	@./sim 
+endif	
+
 # Clean target
 clean:
 ifeq ($(OS),Windows_NT)
