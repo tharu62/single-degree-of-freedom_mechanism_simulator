@@ -3,7 +3,7 @@
 int main(void)
 {
     // Main fuction that incapsulate the entire computation of the simulator.
-    SDFMecSim();
+    PhysicsEngineRun();
     
     return 0;
 }

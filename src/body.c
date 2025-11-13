@@ -1,14 +1,10 @@
-#include "vector2d.h"
+#include "body.h"
 
-typedef struct{
-    vec position;
-    vec velocity;
-    vec acceleration;
-    vec centerOfMass;
-    vec orientation;  // ???
-    
-    float area;
-    float density;
-    float mass;  // mass = area * height * density = area * 1 * density.
-
-} rigid_body; // two random points in the body always mantain the same distance over time. 
+void init_body(vec pos, vec vel, vec acc, vec com, float area, float density, rigid_body* body){
+    body->position = pos;
+    body->velocity = vel;
+    body->acceleration = acc;
+    body->centerOfMass = com;
+    body->mass = area * density;
+    return;
+}

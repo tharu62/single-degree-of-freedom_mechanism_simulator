@@ -1,25 +1,28 @@
-#include "raylib.h"
-#include "math.h"
-#include "vector2d.h"
+#include "application.h"
 
+/***************************************/
+
+// window size
 int screenWidth = 1280;
 int screenHeight = 720;
 
 // Blueprint Color Scheme
-Color RoyaleBlue = {48, 87, 225};
-Color LavanderBlue = {206, 216, 247};
-Color ResolutionBlue = {0, 32, 130};
+const Color RoyaleBlue = {48, 87, 225};
+const Color LavanderBlue = {206, 216, 247};
+const Color ResolutionBlue = {0, 32, 130};
+
+/************************************* */
 
 void draw_margins();
 void draw_legend();
 
-void SDFMecSim()
+void PhysicsEngineRun()
 {
     // Initialization
     //--------------------------------------------------------------------------------------
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
-    InitWindow(screenWidth, screenHeight, "SDF Mec Sim");
+    InitWindow(screenWidth, screenHeight, "Pyhisics Engine Simulator");
 
     Rectangle player = { 400, 280, 40, 40 };
 
@@ -83,7 +86,8 @@ void SDFMecSim()
                 DrawLine(-screenWidth*10, (int)camera.target.y, screenWidth*10, (int)camera.target.y, GREEN);
 
             EndMode2D();
-
+            
+            // extra
             draw_margins();
             draw_legend();
 

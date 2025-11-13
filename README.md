@@ -1,7 +1,10 @@
-# SINGLE-DEGREE-OF-FREEDOM MECHANISM SIMULATOR (SDF Mec Sim) (WORK IN PROGRESS)
+# PHYSICS ENGINE ON RAYLIB (WORK IN PROGRESS)
 
-As the name of the repository suggest this is a software designed to simulate mechanisms with a single degree of freedom in a 2D space. The mechanisms are customizable and there are varius possible parameters to set up for different kind of simulation. 
+This is a simulator of rigid objects with realistic physics in a 2D space.
+The main use of this application will be the simulation of mechanisms with a single degree of freedom. 
+
+To clean the build: make clean
 
 To compile the code: make sim
 
-To run the code: sim.exe
+To run the code: make run
