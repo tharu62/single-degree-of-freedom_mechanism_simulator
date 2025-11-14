@@ -1,10 +1,4 @@
-#include <math.h>
-
-// vettore 2d
-typedef struct{
-    float x;
-    float y;
-} vec;
+#include "vector.h"
 
 // prodotto vettoriale per vettori 2d
 float cross_product(vec a, vec b){

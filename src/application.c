@@ -1,26 +1,20 @@
 #include "application.h"
 
-/***************************************/
-
+/*******************************************************************************************/
 // window size
 int screenWidth = 1280;
 int screenHeight = 720;
-
 // Blueprint Color Scheme
 const Color RoyaleBlue = {48, 87, 225};
 const Color LavanderBlue = {206, 216, 247};
 const Color ResolutionBlue = {0, 32, 130};
-
-/************************************* */
-
-void draw_margins();
-void draw_legend();
+/*******************************************************************************************/
 
 void PhysicsEngineRun()
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-
+    SetTraceLogLevel(LOG_ERROR);        // Cut out log info on run time
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "Pyhisics Engine Simulator");
 
@@ -39,51 +33,23 @@ void PhysicsEngineRun()
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key
     {
-        // Update
+        // Update values of drawbles
         //----------------------------------------------------------------------------------
-        // Player movement
-        if (IsKeyDown(KEY_RIGHT)) player.x += 2;
-        else if (IsKeyDown(KEY_LEFT)) player.x -= 2;
-
-        // Camera target follows player
-        camera.target = (Vector2){ player.x + 20, player.y + 20 };
-
-        // Uses log scaling to provide consistent zoom speed
-        camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove()*0.1f));
-        
-        // Camera zoom controls
-        if (camera.zoom > 3.0f) camera.zoom = 3.0f;
-        else if (camera.zoom < 0.1f) camera.zoom = 0.1f;
-
-        // Camera reset (zoom and rotation)
-        if (IsKeyPressed(KEY_R))
-        {
-            camera.zoom = 1.0f;
-        }
+        input(&player, &camera);
+        if (IsWindowResized() && !IsWindowFullscreen()) window(&camera);
         //----------------------------------------------------------------------------------
 
-        // Draw
+        // Draw updated drawables
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
+            // reset background color
             ClearBackground(RoyaleBlue);
-            
-            if (IsWindowResized() && !IsWindowFullscreen())
-            {
-                screenWidth = GetScreenWidth();
-                screenHeight = GetScreenHeight();
-                camera.target = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
-                camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
-            }
 
-            // drawing on screen
+            // drawing on camera
             BeginMode2D(camera);
 
-                DrawRectangleRec(player, RED);
-                DrawRectangle(-6000, 320, 13000, 8000, DARKGRAY);
-
-                DrawLine((int)camera.target.x, -screenHeight*10, (int)camera.target.x, screenHeight*10, GREEN);
-                DrawLine(-screenWidth*10, (int)camera.target.y, screenWidth*10, (int)camera.target.y, GREEN);
+                draw(&player, &camera);
 
             EndMode2D();
             
@@ -101,6 +67,30 @@ void PhysicsEngineRun()
     //--------------------------------------------------------------------------------------
 
     return;
+}
+
+
+void input(Rectangle* player, Camera2D* camera){
+    // Player movement
+    if (IsKeyDown(KEY_RIGHT)) player->x += 2;
+    else if (IsKeyDown(KEY_LEFT)) player->x -= 2;
+
+    // Camera target follows player
+    camera->target = (Vector2){0,0};
+    // Uses log scaling to provide consistent zoom speed
+    camera->zoom = expf(logf(camera->zoom) + ((float)GetMouseWheelMove()*0.1f));
+    // Camera zoom controls
+    if (camera->zoom > 3.0f) camera->zoom = 3.0f;
+    else if (camera->zoom < 0.1f) camera->zoom = 0.1f;
+    // Camera reset (zoom and rotation)
+    if (IsKeyPressed(KEY_R))camera->zoom = 1.0f;
+}
+
+void window(Camera2D* camera){
+    screenWidth = GetScreenWidth();
+    screenHeight = GetScreenHeight();
+    camera->target = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
+    camera->offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
 }
 
 void draw_margins(){

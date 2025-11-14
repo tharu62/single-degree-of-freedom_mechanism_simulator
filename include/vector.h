@@ -2,7 +2,10 @@
 #define VECTOR_H
 
 // vettore 2d
-typedef struct {}vec;
+typedef struct{
+    float x;
+    float y;
+} vec;
 
 // prodotto vettoriale per vettori 2d
 float cross_product(vec a, vec b);

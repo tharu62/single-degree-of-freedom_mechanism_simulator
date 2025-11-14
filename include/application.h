@@ -1,10 +1,14 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include <stdio.h>
+#include <math.h>
 #include "raylib.h"
-#include "math.h"
 #include "vector.h"
+#include "draw.h"
 
+void input(Rectangle* player, Camera2D* camera);
+void window(Camera2D* camera);
 void draw_margins();
 void draw_legend();
 
