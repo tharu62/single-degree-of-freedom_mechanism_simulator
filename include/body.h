@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <math.h>
+#include "raylib.h"
 #include "vector.h"
 #include "RK4.h"
 
@@ -24,6 +25,7 @@ typedef enum {
  */ 
 typedef struct{
     shape_type shape;
+    Color color;
     vec position;
     vec linear_vel;
     float rotation;
@@ -42,7 +44,12 @@ typedef struct{
 } rigid_body;
 
 //
-void init_circle_body();
+void init_circle_body(vec position, float density, float mass, 
+    float restitution, bool static_, float radius, Color color, rigid_body* body);
+
+//
+void init_box_body(vec position, float density, float mass, 
+    float restitution, bool static_, float width, float height, Color color, rigid_body* body);
 
 //
 void compute_acceleration(rigid_body* body);

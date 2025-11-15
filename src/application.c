@@ -8,6 +8,8 @@ int screenHeight = 720;
 const Color RoyaleBlue = {48, 87, 225};
 const Color LavanderBlue = {206, 216, 247};
 const Color ResolutionBlue = {0, 32, 130};
+// constants
+const int body_count = 10;
 /*******************************************************************************************/
 
 void PhysicsEngineRun()
@@ -19,7 +21,9 @@ void PhysicsEngineRun()
     InitWindow(screenWidth, screenHeight, "Pyhisics Engine Simulator");
 
     Camera2D camera = { 0 };
-    init(&camera);
+    init_camera(&camera);
+    rigid_body* body_list = malloc(sizeof(rigid_body)*body_count);
+    init_bodies(body_list, body_count);
 
     SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -29,8 +33,13 @@ void PhysicsEngineRun()
     {
         // Update values of drawables
         //----------------------------------------------------------------------------------
-        input(&camera);
+        input_camera(&camera);
         if (IsWindowResized() && !IsWindowFullscreen()) window(&camera);
+        // Player movement
+        if (IsKeyDown(KEY_RIGHT)) body_list[0].position.x += 0.5;
+        else if (IsKeyDown(KEY_LEFT)) body_list[0].position.x -= 0.5;
+        else if (IsKeyDown(KEY_UP)) body_list[0].position.y -= 0.5;
+        else if (IsKeyDown(KEY_DOWN)) body_list[0].position.y += 0.5;
         //----------------------------------------------------------------------------------
 
         // Draw updated drawables
@@ -43,7 +52,7 @@ void PhysicsEngineRun()
             // drawing on camera
             BeginMode2D(camera);
 
-                draw(&camera);
+                draw(&camera, body_list, body_count);
                 // DrawCircle(0,0,1,WHITE);
 
             EndMode2D();
@@ -64,8 +73,16 @@ void PhysicsEngineRun()
     return;
 }
 
+Color RandomColor() {
+    return (Color){
+        .r = rand() % 256,
+        .g = rand() % 256,
+        .b = rand() % 256,
+        .a = 255
+    };
+}
 
-void init(Camera2D* camera){
+void init_camera(Camera2D* camera){
     // camera.target = (Vector2){ player.x + 20.0f, player.y + 20.0f };
     camera->target = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
     camera->offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
@@ -73,10 +90,33 @@ void init(Camera2D* camera){
     camera->zoom = 15.0f;
 }
 
-void input(Camera2D* camera){
-    // Player movement
-    // if (IsKeyDown(KEY_RIGHT)) player->x += 2;
-    // else if (IsKeyDown(KEY_LEFT)) player->x -= 2;
+void init_bodies(rigid_body* body_list, int body_count) {
+
+    vec pos = {0, 0};
+    srand(time(NULL));
+
+    for (int i = 0; i < body_count; ++i) {
+
+        int n = rand() % 1;  // 0 = Circle, 1 = Box
+        pos.x = -10.0 + (float)(rand() % 30 + 1);
+        pos.y = -10.0 + (float)(rand() % 30 + 1);
+
+        Color randomColor = RandomColor();
+
+        switch (n)
+        {
+        case Circle:
+            init_circle_body(pos, 30, 30, 2, true, 2, randomColor, &body_list[i]);
+            break;
+
+        case Box:
+            init_box_body(pos, 30, 30, 2, true, 10.0, 20.0, randomColor, &body_list[i]);
+            break;
+        }
+    }
+}
+
+void input_camera(Camera2D* camera){
 
     // Camera target follows player
     camera->target = (Vector2){0,0};
