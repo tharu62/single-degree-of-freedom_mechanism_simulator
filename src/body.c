@@ -1,15 +1,40 @@
 #include "body.h"
 
+// typedef enum {
+//     Circle=0,
+//     Box=1
+// } shape_type;
 
-void init_rigid_body(vec verteces[20], vec vel, vec acc, vec com, float mass, rigid_body* body){
-    body->shape = disk;
-    for(int i=0; i<20; ++i){
-        body->vertices[i] = verteces[i];
-    }
-    body->velocity = vel;
-    body->acceleration = acc;
-    body->centerOfMass = com;
-    body->mass = mass;
+// typedef struct{
+//     shape_type shape;
+//     vec position;
+//     vec linear_vel;
+//     float rotation;
+//     float rotational_vel;
+//     float density;
+//     float mass;
+//     float restitution;
+//     float area;
+//     bool static_;
+//     float radius;
+//     float width;
+//     float height;
+// } rigid_body;
+
+
+// 
+void init_circle_body(vec position, float density, float mass, 
+    float restitution, bool static_, float radius, float width, float height, rigid_body* body){
+
+    body->position = position;
+    body->density = density;
+    body->restitution = restitution;
+    body->area = radius * M_PI;
+    if (mass != 0) body->mass = mass;
+    else body->mass = body->area * density;
+    body->static_ = static_;
+    body->radius = radius;
+    
     return;
 }   
 
@@ -21,43 +46,16 @@ void compute_acceleration(rigid_body* body){
 
 void compute_position(rigid_body* body, float dt){
 
-    compute_RK4(&body->centerOfMass, body->acceleration, dt);
     return;
 }
 
 void compute_rotation(rigid_body* body){
-    switch ( body->shape )
-    {
-        case disk:
-            
-            break;
-        case cube:
 
-            break;
-        case bar:
-
-            break;
-        default:
-            return;
-    }
     return;
 }
 
 void compute_collisions(rigid_body* body){
-    switch ( body->shape )
-    {
-        case disk:
-            
-            break;
-        case cube:
 
-            break;
-        case bar:
-
-            break;
-        default:
-            return;
-    }
     return;
 }
 

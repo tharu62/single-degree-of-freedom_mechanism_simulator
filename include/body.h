@@ -1,46 +1,59 @@
 #ifndef BODY_H
 #define BODY_H
 
+#include <stdbool.h>
+#include <math.h>
 #include "vector.h"
 #include "RK4.h"
+
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 /** 
  * @brief Shapes are of 2d objects but ideally they rapresent a 3d object constrained in the 2d plane z=0
  */
 typedef enum {
-    disk=0,
-    cube=1,
-    bar=2
-} shapes;
+    Circle=0,
+    Box=1
+} shape_type;
 
 /**
  * @brief A rigid body is a body of wich two random points always mantain the same distance over time. In other words, it cannot deform.
- * 
  */ 
 typedef struct{
-    shapes shape;
-    vec vertices[20]; // relative positionof vertices from center of mass
-    int number_of_vertices;
-    vec velocity;
-    vec acceleration;
-    vec centerOfMass;
-    vec rotation;
+    shape_type shape;
+    vec position;
+    vec linear_vel;
+    float rotation;
+    float rotational_vel;
+
+    float density;
     float mass;
+    float restitution;
+    float area;
+
+    bool static_;
+
+    float radius;
+    float width;
+    float height;
 } rigid_body;
 
+//
+void init_circle_body();
 
-void init_rigid_body(vec verteces[20], vec vel, vec acc, vec com, float mass, rigid_body* body);
-
-
+//
 void compute_acceleration(rigid_body* body);
 
-
+//
 void compute_position(rigid_body* body, float dt);
 
-
+//
 void compute_rotation(rigid_body* body);
 
-
+// 
 void compute_collisions(rigid_body* body);
 
 #endif // BODY_H

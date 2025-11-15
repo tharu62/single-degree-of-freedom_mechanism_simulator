@@ -18,14 +18,8 @@ void PhysicsEngineRun()
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "Pyhisics Engine Simulator");
 
-    Rectangle player = { 400, 280, 40, 40 };
-
     Camera2D camera = { 0 };
-    // camera.target = (Vector2){ player.x + 20.0f, player.y + 20.0f };
-    camera.target = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
-    camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
-    camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
+    init(&camera);
 
     SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -33,9 +27,9 @@ void PhysicsEngineRun()
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key
     {
-        // Update values of drawbles
+        // Update values of drawables
         //----------------------------------------------------------------------------------
-        input(&player, &camera);
+        input(&camera);
         if (IsWindowResized() && !IsWindowFullscreen()) window(&camera);
         //----------------------------------------------------------------------------------
 
@@ -49,7 +43,8 @@ void PhysicsEngineRun()
             // drawing on camera
             BeginMode2D(camera);
 
-                draw(&player, &camera);
+                draw(&camera);
+                // DrawCircle(0,0,1,WHITE);
 
             EndMode2D();
             
@@ -70,20 +65,28 @@ void PhysicsEngineRun()
 }
 
 
-void input(Rectangle* player, Camera2D* camera){
+void init(Camera2D* camera){
+    // camera.target = (Vector2){ player.x + 20.0f, player.y + 20.0f };
+    camera->target = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
+    camera->offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
+    camera->rotation = 0.0f;
+    camera->zoom = 15.0f;
+}
+
+void input(Camera2D* camera){
     // Player movement
-    if (IsKeyDown(KEY_RIGHT)) player->x += 2;
-    else if (IsKeyDown(KEY_LEFT)) player->x -= 2;
+    // if (IsKeyDown(KEY_RIGHT)) player->x += 2;
+    // else if (IsKeyDown(KEY_LEFT)) player->x -= 2;
 
     // Camera target follows player
     camera->target = (Vector2){0,0};
     // Uses log scaling to provide consistent zoom speed
     camera->zoom = expf(logf(camera->zoom) + ((float)GetMouseWheelMove()*0.1f));
     // Camera zoom controls
-    if (camera->zoom > 3.0f) camera->zoom = 3.0f;
-    else if (camera->zoom < 0.1f) camera->zoom = 0.1f;
+    // if (camera->zoom > 3.0f) camera->zoom = 3.0f;
+    // else if (camera->zoom < 0.1f) camera->zoom = 0.1f;
     // Camera reset (zoom and rotation)
-    if (IsKeyPressed(KEY_R))camera->zoom = 1.0f;
+    if (IsKeyPressed(KEY_R))camera->zoom = 15.0f;
 }
 
 void window(Camera2D* camera){
@@ -104,8 +107,8 @@ void draw_legend(){
     DrawRectangle( 10, 10, 250, 113, Fade(LavanderBlue, 0.5f));
     DrawRectangleLines( 10, 10, 250, 113, LavanderBlue);
     DrawText("Free 2d camera controls:", 20, 20, 10, BLACK);
-    DrawText("- Right/Left to move Offset", 40, 40, 10, BLACK);
-    DrawText("- Mouse Wheel to Zoom in-out", 40, 60, 10, BLACK);
-    DrawText("- A / S to Rotate", 40, 80, 10, BLACK);
-    DrawText("- R to reset Zoom and Rotation", 40, 100, 10, BLACK);
+    DrawText("- Mouse Wheel to Zoom in-out", 40, 40, 10, BLACK);
+    DrawText("- R to reset Zoom and Rotation", 40, 60, 10, BLACK);
+    // DrawText("- A / S to Rotate", 40, 80, 10, BLACK);
+    // DrawText("- Right/Left to move Offset", 40, 100, 10, BLACK);
 }

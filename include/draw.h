@@ -6,7 +6,7 @@
 extern int screenWidth;
 extern int screenHeight;
 
-void draw(Rectangle* player, Camera2D* camera);
+void draw(Camera2D* camera);
 
 
 #endif // DRAWALL_H

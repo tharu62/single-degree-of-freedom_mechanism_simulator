@@ -1,5 +1,6 @@
 #include "vector.h"
 
+// somma di vettori 2d
 vec sum_(vec* a, vec* b){
     vec temp;
     temp.x = a->x + b->x;
@@ -7,6 +8,8 @@ vec sum_(vec* a, vec* b){
     return temp;
 }
 
+/********************************** VECTOR OPERATIONS ****************************************/
+// sottrazione di vettori 2d
 vec sub_(vec* a, vec* b){
     vec temp;
     temp.x = a->x - b->x;
@@ -14,6 +17,7 @@ vec sub_(vec* a, vec* b){
     return temp;
 }
 
+// somma di un vettore con una costante
 vec sum_const(vec* a, float b){
     vec temp;
     temp.x = a->x + b;
@@ -21,6 +25,7 @@ vec sum_const(vec* a, float b){
     return temp;
 }
 
+// sottrazione di un vettore con una costante
 vec sub_const(vec* a, float b){
     vec temp;
     temp.x = a->x - b;
@@ -28,6 +33,7 @@ vec sub_const(vec* a, float b){
     return temp;
 }
 
+// moltiplicazione di un vettore con una costante
 vec mult_const(vec* a, float b){
     vec temp;
     temp.x = a->x * b;
@@ -35,6 +41,7 @@ vec mult_const(vec* a, float b){
     return temp;
 }
 
+// divisione di un vettore con una costante
 vec div_const(vec* a, float b){
     vec temp;
     if(b != 0.0){
@@ -43,7 +50,8 @@ vec div_const(vec* a, float b){
         return temp;
     }
     else{
-        return *a;
+        printf("error : division by 0");
+        exit(1);
     }
 }
 
@@ -57,8 +65,8 @@ float dot_product(vec a, vec b){
     return (a.x*b.x + a.y*b.y);
 }
 
-// norma di un vettore 2d
-float norm(vec a){
+// lunghezza di un vettore 2d
+float len(vec a){
     return sqrt(a.x*a.x + a.y*a.y);
 }
 
@@ -69,13 +77,15 @@ float dist(vec a, vec b){
 
 // angolo tra due vettori 2d
 float angle(vec a, vec b){
-    return acos(dot_product(a,b) / norm(a) * norm(b));
+    return acos(dot_product(a,b) / len(a) * len(b));
 }
 
 // normalizzazione di un vettore 2d
 void normalize(vec *a){
-    int norm = sqrt(a->x*a->x + a->y*a->y);
-    a->x = a->x / norm;
-    a->y = a->y / norm;
+    float len_ = len(*a);
+    a->x = a->x / len_;
+    a->y = a->y / len_;
     return;
 }
+
+/**********************************************************************************************/

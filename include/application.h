@@ -7,7 +7,8 @@
 #include "vector.h"
 #include "draw.h"
 
-void input(Rectangle* player, Camera2D* camera);
+void init(Camera2D* Camera);
+void input(Camera2D* camera);
 void window(Camera2D* camera);
 void draw_margins();
 void draw_legend();

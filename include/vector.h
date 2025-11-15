@@ -1,7 +1,10 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
+
 
 // vettore 2d
 typedef struct{
@@ -33,8 +36,8 @@ float cross_product(vec a, vec b);
 // prodotto scalare per vettori 2d
 float dot_product(vec a, vec b);
 
-// norma di un vettore 2d
-float norm(vec a);
+// lunghezza di un vettore 2d
+float len(vec a);
 
 // distanza tra due vettori 2d
 float dist(vec a, vec b);
