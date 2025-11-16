@@ -2,7 +2,7 @@
 
 /*******************************************************************************************/
 // window size
-int screenWidth = 1280;
+int screenWidth = 1280;              
 int screenHeight = 720;
 // Blueprint Color Scheme
 const Color RoyaleBlue = {48, 87, 225};
@@ -10,6 +10,8 @@ const Color LavanderBlue = {206, 216, 247};
 const Color ResolutionBlue = {0, 32, 130};
 // constants
 const int body_count = 10;
+const int framerate = 60;               // [fps] 
+const float speed = 1.0;                // [m/s] 
 /*******************************************************************************************/
 
 void PhysicsEngineRun()
@@ -25,7 +27,7 @@ void PhysicsEngineRun()
     rigid_body* body_list = malloc(sizeof(rigid_body)*body_count);
     init_bodies(body_list, body_count);
 
-    SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
+    SetTargetFPS(framerate);                   // Set to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
     // Main game loop
@@ -36,10 +38,15 @@ void PhysicsEngineRun()
         input_camera(&camera);
         if (IsWindowResized() && !IsWindowFullscreen()) window(&camera);
         // Player movement
-        if (IsKeyDown(KEY_RIGHT)) body_list[0].position.x += 0.5;
-        else if (IsKeyDown(KEY_LEFT)) body_list[0].position.x -= 0.5;
-        else if (IsKeyDown(KEY_UP)) body_list[0].position.y -= 0.5;
-        else if (IsKeyDown(KEY_DOWN)) body_list[0].position.y += 0.5;
+        if (IsKeyDown(KEY_RIGHT))   body_list[0].position.x += speed * GetFrameTime();     
+        if (IsKeyDown(KEY_LEFT))    body_list[0].position.x -= speed * GetFrameTime();
+        if (IsKeyDown(KEY_UP))      body_list[0].position.y -= speed * GetFrameTime();
+        if (IsKeyDown(KEY_DOWN))    body_list[0].position.y += speed * GetFrameTime();
+        for (int i=0; i< body_count; ++i) {
+            for (int j=0; j<body_count; ++j){
+                if (i!=j) compute_collisions_circles(&body_list[i], &body_list[j]);
+            }
+        }
         //----------------------------------------------------------------------------------
 
         // Draw updated drawables
@@ -67,7 +74,7 @@ void PhysicsEngineRun()
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    CloseWindow();        // Close window and OpenGL context
+    CloseWindow();                      // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
     return;
@@ -87,7 +94,7 @@ void init_camera(Camera2D* camera){
     camera->target = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
     camera->offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
     camera->rotation = 0.0f;
-    camera->zoom = 15.0f;
+    camera->zoom = 20.0f;
 }
 
 void init_bodies(rigid_body* body_list, int body_count) {
@@ -106,11 +113,11 @@ void init_bodies(rigid_body* body_list, int body_count) {
         switch (n)
         {
         case Circle:
-            init_circle_body(pos, 30, 30, 2, true, 2, randomColor, &body_list[i]);
+            init_circle_body(pos, 30, 30, 2, true, 1, randomColor, &body_list[i]);
             break;
 
         case Box:
-            init_box_body(pos, 30, 30, 2, true, 10.0, 20.0, randomColor, &body_list[i]);
+            init_box_body(pos, 30, 30, 2, true, 1.0, 2.0, randomColor, &body_list[i]);
             break;
         }
     }
@@ -119,7 +126,7 @@ void init_bodies(rigid_body* body_list, int body_count) {
 void input_camera(Camera2D* camera){
 
     // Camera target follows player
-    camera->target = (Vector2){0,0};
+    camera->target = (vec){0,0};
     // Uses log scaling to provide consistent zoom speed
     camera->zoom = expf(logf(camera->zoom) + ((float)GetMouseWheelMove()*0.1f));
     // Camera zoom controls
@@ -132,8 +139,8 @@ void input_camera(Camera2D* camera){
 void window(Camera2D* camera){
     screenWidth = GetScreenWidth();
     screenHeight = GetScreenHeight();
-    camera->target = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
-    camera->offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
+    camera->target = (vec){ screenWidth/2.0f, screenHeight/2.0f };
+    camera->offset = (vec){ screenWidth/2.0f, screenHeight/2.0f };
 }
 
 void draw_margins(){

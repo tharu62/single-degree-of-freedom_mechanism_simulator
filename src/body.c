@@ -22,7 +22,16 @@
 // } rigid_body;
 
 
-// 
+void move(rigid_body* body, vec amount){
+    sum_ref(&body->position, &amount);
+    return;
+}
+
+void move_to(rigid_body* body, vec new_position){
+    body->position = new_position;
+}
+
+
 void init_circle_body(vec position, float density, float mass, 
     float restitution, bool static_, float radius, Color color, rigid_body* body){
 
@@ -74,25 +83,23 @@ void compute_rotation(rigid_body* body){
     return;
 }
 
-void compute_collisions_circles(rigid_body* circle1, rigid_body* cirlce2){
-    float distance = dist(circle1->position, cirlce2->position);
-    float radii = circle1->radius + cirlce2->radius;
-    if(distance >= radii){
-
-    }
-    else{
-
+void compute_collisions_circles(rigid_body* circle1, rigid_body* circle2){
+    vec normal;
+    sub_val(&circle2->position, &circle1->position, &normal);
+    normalize_ref(&normal);
+    float distance = dist(circle1->position, circle2->position);
+    float radii = circle1->radius + circle2->radius;
+    float depth = radii - distance;
+    if(distance < radii){ // collision
+        vec temp1;
+        vec temp2;
+        mult_const_val(&normal, -depth, &temp1);
+        div_const_ref(&temp1, 2.f);
+        mult_const_val(&normal, depth, &temp2);
+        div_const_ref(&temp2, 2.f);
+        move(circle1, temp1);
+        move(circle2, temp2);
     }
     return;
-}
-
-
-void move(rigid_body* body, vec amount){
-    sum_(&body->position, &amount);
-    return;
-}
-
-void move_to(rigid_body* body, vec new_position){
-    body->position = new_position;
 }
 

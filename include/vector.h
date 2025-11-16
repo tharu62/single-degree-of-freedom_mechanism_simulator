@@ -4,31 +4,51 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "raylib.h"
 
+#define vec Vector2
 
-// vettore 2d
-typedef struct{
-    float x;
-    float y;
-} vec;
+// // vettore 2d
+// typedef struct{
+//     float x;
+//     float y;
+// } vec;
 
-// somma tra vettori
-vec sum_(vec* a, vec* b);
+// somma di vettori 2d, modifica a
+void sum_val(vec* a, vec* b, vec* c);
 
-// sottrazione tra vettori
-vec sub_(vec* a, vec* b);
+// sottrazione di vettori 2d, modifica a
+void sub_val(vec* a, vec* b, vec* c);
+
+// somma di vettori 2d, modifica a
+void sum_ref(vec* a, vec* b);
+
+// sottrazione di vettori 2d, modifica a
+void sub_ref(vec* a, vec* b);
 
 // somma di un vettore con una costante
-vec sum_const(vec* a, float b);
+void sum_const_val(vec* a, float b, vec* c);
+
+// somma di un vettore con una costante, mdifica a
+void sum_const_ref(vec* a, float b);
 
 // sottrazione di un vettore con una costante
-vec sub_const(vec* a, float b);
+void sub_const_val(vec* a, float b, vec* c);
 
-// prodotto di un vettore con una costante
-vec mult_const(vec* a, float b);
+// sottrazione di un vettore con una costante, moifica a
+void sub_const_ref(vec* a, float b);
+
+// moltiplicazione di un vettore con una costante
+void mult_const_val(vec* a, float b, vec* c);
+
+// moltiplicazione di un vettore con una costante, modifica a
+void mult_const_ref(vec* a, float b);
 
 // divisione di un vettore con una costante
-vec div_const(vec* a, float b);
+void div_const_val(vec* a, float b, vec* c);
+
+// divisione di un vettore con una costante, modifica a
+void div_const_ref(vec* a, float b);
 
 // prodotto vettoriale per vettori 2d
 float cross_product(vec a, vec b);
@@ -45,7 +65,10 @@ float dist(vec a, vec b);
 // angolo tra due vettori 2d
 float angle(vec a, vec b);
 
+// normalizzazione di un vettore 2d
+void normalize_val(vec *a, vec* b);
+
 // normalizzazione di un vettore
-void normalize(vec *a);
+void normalize_ref(vec *a);
 
 #endif // VECTOR_H

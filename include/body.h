@@ -43,6 +43,10 @@ typedef struct{
     float height;
 } rigid_body;
 
+void move(rigid_body* body, vec amount);
+
+void move_to(rigid_body* body, vec new_position);
+
 //
 void init_circle_body(vec position, float density, float mass, 
     float restitution, bool static_, float radius, Color color, rigid_body* body);
@@ -56,6 +60,8 @@ void compute_acceleration(rigid_body* body);
 
 //
 void compute_position(rigid_body* body, float dt);
+
+void compute_collisions_circles(rigid_body* circle1, rigid_body* circle2);
 
 //
 void compute_rotation(rigid_body* body);

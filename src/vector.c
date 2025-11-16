@@ -1,53 +1,98 @@
 #include "vector.h"
 
-// somma di vettori 2d
-vec sum_(vec* a, vec* b){
-    vec temp;
-    temp.x = a->x + b->x;
-    temp.y = a->y + b->y;
-    return temp;
-}
 
 /********************************** VECTOR OPERATIONS ****************************************/
+
+// somma di vettori 2d
+void sum_val(vec* a, vec* b, vec* c){
+    c->x = a->x + b->x;
+    c->y = a->y + b->y;
+    return;
+}
+
 // sottrazione di vettori 2d
-vec sub_(vec* a, vec* b){
-    vec temp;
-    temp.x = a->x - b->x;
-    temp.y = a->y - b->y;
-    return temp;
+void sub_val(vec* a, vec* b, vec* c){
+    c->x = a->x - b->x;
+    c->y = a->y - b->y;
+    return;
+}
+
+// somma di vettori 2d, modifica a
+void sum_ref(vec* a, vec* b){
+    a->x = a->x + b->x;
+    a->y = a->y + b->y;
+    return;
+}
+
+// sottrazione di vettori 2d, modifica a
+void sub_ref(vec* a, vec* b){
+    a->x = a->x - b->x;
+    a->y = a->y - b->y;
+    return;
 }
 
 // somma di un vettore con una costante
-vec sum_const(vec* a, float b){
-    vec temp;
-    temp.x = a->x + b;
-    temp.y = a->y + b;
-    return temp;
+void sum_const_val(vec* a, float b, vec* c){
+    c->x = a->x + b;
+    c->y = a->y + b;
+    return;
 }
 
+// somma di un vettore con una costante, mdifica a
+void sum_const_ref(vec* a, float b){
+    a->x = a->x + b;
+    a->y = a->y + b;
+    return;
+}
+
+
 // sottrazione di un vettore con una costante
-vec sub_const(vec* a, float b){
-    vec temp;
-    temp.x = a->x - b;
-    temp.y = a->y - b;
-    return temp;
+void sub_const_val(vec* a, float b, vec* c){
+    c->x = a->x - b;
+    c->y = a->y - b;
+    return;
+}
+
+// sottrazione di un vettore con una costante, moifica a
+void sub_const_ref(vec* a, float b){
+    a->x = a->x - b;
+    a->y = a->y - b;
+    return;
 }
 
 // moltiplicazione di un vettore con una costante
-vec mult_const(vec* a, float b){
-    vec temp;
-    temp.x = a->x * b;
-    temp.y = a->y * b;
-    return temp;
+void mult_const_val(vec* a, float b, vec* c){
+    c->x = a->x * b;
+    c->y = a->y * b;
+    return;
+}
+
+// moltiplicazione di un vettore con una costante, modifica a
+void mult_const_ref(vec* a, float b){
+    a->x = a->x * b;
+    a->y = a->y * b;
+    return;
 }
 
 // divisione di un vettore con una costante
-vec div_const(vec* a, float b){
-    vec temp;
+void div_const_val(vec* a, float b, vec* c){
     if(b != 0.0){
-        temp.x = a->x / b;
-        temp.y = a->y / b;
-        return temp;
+        c->x = a->x / b;
+        c->y = a->y / b;
+        return;
+    }
+    else{
+        printf("error : division by 0");
+        exit(1);
+    }
+}
+
+// divisione di un vettore con una costante, modifica a
+void div_const_ref(vec* a, float b){
+    if(b != 0.0){
+        a->x = a->x / b;
+        a->y = a->y / b;
+        return;
     }
     else{
         printf("error : division by 0");
@@ -81,11 +126,20 @@ float angle(vec a, vec b){
 }
 
 // normalizzazione di un vettore 2d
-void normalize(vec *a){
+void normalize_val(vec *a, vec* b){
+    float len_ = len(*a);
+    b->x = a->x / len_;
+    b->y = a->y / len_;
+    return;
+}
+
+// normalizzazione di un vettore 2d, modifica a
+void normalize_ref(vec *a){
     float len_ = len(*a);
     a->x = a->x / len_;
     a->y = a->y / len_;
     return;
 }
+
 
 /**********************************************************************************************/
