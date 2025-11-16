@@ -11,7 +11,7 @@ const Color ResolutionBlue = {0, 32, 130};
 // constants
 const int body_count = 10;
 const int framerate = 60;               // [fps] 
-const float speed = 1.0;                // [m/s] 
+const float speed = 10.0;                // [m/s] 
 /*******************************************************************************************/
 
 void PhysicsEngineRun()
@@ -35,18 +35,16 @@ void PhysicsEngineRun()
     {
         // Update values of drawables
         //----------------------------------------------------------------------------------
+        // camera update
         input_camera(&camera);
         if (IsWindowResized() && !IsWindowFullscreen()) window(&camera);
-        // Player movement
+        // player update
         if (IsKeyDown(KEY_RIGHT))   body_list[0].position.x += speed * GetFrameTime();     
         if (IsKeyDown(KEY_LEFT))    body_list[0].position.x -= speed * GetFrameTime();
         if (IsKeyDown(KEY_UP))      body_list[0].position.y -= speed * GetFrameTime();
         if (IsKeyDown(KEY_DOWN))    body_list[0].position.y += speed * GetFrameTime();
-        for (int i=0; i< body_count; ++i) {
-            for (int j=0; j<body_count; ++j){
-                if (i!=j) compute_collisions_circles(&body_list[i], &body_list[j]);
-            }
-        }
+        // position update
+        compute_position(body_list, body_count, GetFrameTime());
         //----------------------------------------------------------------------------------
 
         // Draw updated drawables
@@ -60,7 +58,6 @@ void PhysicsEngineRun()
             BeginMode2D(camera);
 
                 draw(&camera, body_list, body_count);
-                // DrawCircle(0,0,1,WHITE);
 
             EndMode2D();
             
@@ -75,6 +72,12 @@ void PhysicsEngineRun()
     // De-Initialization
     //--------------------------------------------------------------------------------------
     CloseWindow();                      // Close window and OpenGL context
+    for(int i=0; i<body_count; ++i){
+        free(body_list[i].vertices);                // Free allocated vertices
+        free(body_list[i].transformed_vertices);    // ...
+        free(body_list[i].triangles);               // ...
+    }
+    free(body_list);                    // Free allocated bodies
     //--------------------------------------------------------------------------------------
 
     return;
@@ -104,7 +107,8 @@ void init_bodies(rigid_body* body_list, int body_count) {
 
     for (int i = 0; i < body_count; ++i) {
 
-        int n = rand() % 1;  // 0 = Circle, 1 = Box
+        // int n = rand() % 2;  // 0 = Circle, 1 = Box
+        int n = 1;
         pos.x = -10.0 + (float)(rand() % 30 + 1);
         pos.y = -10.0 + (float)(rand() % 30 + 1);
 
@@ -117,7 +121,7 @@ void init_bodies(rigid_body* body_list, int body_count) {
             break;
 
         case Box:
-            init_box_body(pos, 30, 30, 2, true, 1.0, 2.0, randomColor, &body_list[i]);
+            init_box_body(pos, 30, 30, 2, true, 2.0, 2.0, randomColor, &body_list[i]);
             break;
         }
     }

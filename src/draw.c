@@ -10,7 +10,15 @@ void draw(Camera2D* camera, rigid_body* body_list, int body_count) {
             break;
 
         case Box:
-            DrawRectangleV(body_list[i].position, (vec){body_list[i].width, body_list[i].height}, body_list[i].color);
+            Rectangle rec = {
+                body_list[i].position.x + body_list[i].transformed_vertices[0].x,
+                body_list[i].position.y + body_list[i].transformed_vertices[0].y,
+                body_list[i].width,
+                body_list[i].height
+            };
+            Vector2 origin = { body_list[i].width/2.f, body_list[i].height/2.f };
+
+            DrawRectanglePro(rec, origin, body_list[i].rotation * RAD2DEG, body_list[i].color);
             break;
 
         default:

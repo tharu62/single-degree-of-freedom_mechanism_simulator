@@ -3,14 +3,14 @@
 
 /********************************** VECTOR OPERATIONS ****************************************/
 
-// somma di vettori 2d
+// somma di vettori 2d, modifica c
 void sum_val(vec* a, vec* b, vec* c){
     c->x = a->x + b->x;
     c->y = a->y + b->y;
     return;
 }
 
-// sottrazione di vettori 2d
+// sottrazione di vettori 2d, modifica c
 void sub_val(vec* a, vec* b, vec* c){
     c->x = a->x - b->x;
     c->y = a->y - b->y;
@@ -31,7 +31,7 @@ void sub_ref(vec* a, vec* b){
     return;
 }
 
-// somma di un vettore con una costante
+// somma di un vettore con una costante, modifica c
 void sum_const_val(vec* a, float b, vec* c){
     c->x = a->x + b;
     c->y = a->y + b;
@@ -46,7 +46,7 @@ void sum_const_ref(vec* a, float b){
 }
 
 
-// sottrazione di un vettore con una costante
+// sottrazione di un vettore con una costante, modifica c
 void sub_const_val(vec* a, float b, vec* c){
     c->x = a->x - b;
     c->y = a->y - b;
@@ -60,7 +60,7 @@ void sub_const_ref(vec* a, float b){
     return;
 }
 
-// moltiplicazione di un vettore con una costante
+// moltiplicazione di un vettore con una costante, modifica c
 void mult_const_val(vec* a, float b, vec* c){
     c->x = a->x * b;
     c->y = a->y * b;
@@ -74,7 +74,7 @@ void mult_const_ref(vec* a, float b){
     return;
 }
 
-// divisione di un vettore con una costante
+// divisione di un vettore con una costante, modifica c
 void div_const_val(vec* a, float b, vec* c){
     if(b != 0.0){
         c->x = a->x / b;
@@ -125,7 +125,7 @@ float angle(vec a, vec b){
     return acos(dot_product(a,b) / len(a) * len(b));
 }
 
-// normalizzazione di un vettore 2d
+// normalizzazione di un vettore 2d, modifica b
 void normalize_val(vec *a, vec* b){
     float len_ = len(*a);
     b->x = a->x / len_;
