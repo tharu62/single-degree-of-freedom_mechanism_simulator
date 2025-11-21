@@ -405,7 +405,7 @@ void init_box_body(vec position, float density, float mass, float restitution, b
     return;
 }
 
-// @todo
+// unused
 void compute_acceleration(rigid_body* body){
     // garvity + external forces.
     return;
@@ -460,7 +460,9 @@ void compute_collisions_circles_polygon(rigid_body* circle, rigid_body* polygon)
     return;
 }
 
-// @todo
+/**
+ * @todo not efficient updating method, ...
+ */
 void compute_position(rigid_body* body_list, int body_count, float dt){
     
     for(int i=0; i< body_count; ++i){
@@ -499,8 +501,6 @@ void compute_position(rigid_body* body_list, int body_count, float dt){
                     }
                 }
             }
-
-            transform_vertices(&body_list[i]);
         }
 
     }
