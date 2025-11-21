@@ -10,9 +10,9 @@ const Color LavanderBlue = {206, 216, 247};
 const Color ResolutionBlue = {0, 32, 130};
 
 // constants
-const int body_count = 10;
-const int framerate = 80;                // [fps] 
-const float speed = 10.0;                // [m/s] 
+const int body_count = 10;             // number of bodies in the simulation
+const int framerate = 80;              // [fps] 
+const float speed = 10.0;               // [m/s] 
 /*******************************************************************************************/
 
 void PhysicsEngineRun()
@@ -49,7 +49,7 @@ void PhysicsEngineRun()
         if (IsKeyDown(KEY_F))       rotate(&body_list[0], PI / 2.f * dt);
         if (d.x != 0.0f || d.y != 0.0f) move(&body_list[0], d);
         // position update
-        compute_position(body_list, body_count, GetFrameTime());
+        // compute_position(body_list, body_count, GetFrameTime());
         //----------------------------------------------------------------------------------
 
         // Draw updated drawables
@@ -79,9 +79,9 @@ void PhysicsEngineRun()
     //--------------------------------------------------------------------------------------
     CloseWindow();                      // Close window and OpenGL context
     for(int i=0; i<body_count; ++i){
-        free(body_list[i].vertices.array);                // Free allocated vertices
+        free(body_list[i].vertices.array);                          // Free allocated vertices
         free(body_list[i].transformed_vertices.array);    // ...
-        free(body_list[i].triangles.array);               // ...
+        free(body_list[i].triangles.array);                         // ...
     }
     free(body_list);                    // Free allocated bodies
     //--------------------------------------------------------------------------------------
@@ -113,10 +113,10 @@ void init_bodies(rigid_body* body_list, int body_count) {
 
     for (int i = 0; i < body_count; ++i) {
 
-        // int n = rand() % 2;  // 0 = Circle, 1 = Box
-        int n = 1;
-        pos.x = -10.0 + (float)(rand() % 30 + 1);
-        pos.y = -10.0 + (float)(rand() % 30 + 1);
+        int n = rand() % 2;  // 0 = Circle, 1 = Box
+        // int n = 1;
+        pos.x = -10.0f + (float)(rand() % 30 + 1);
+        pos.y = -10.0f + (float)(rand() % 30 + 1);
 
         Color randomColor = RandomColor();
 
