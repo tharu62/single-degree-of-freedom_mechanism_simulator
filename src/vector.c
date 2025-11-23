@@ -127,7 +127,12 @@ float angle(vec a, vec b){
 
 // normalizzazione di un vettore 2d, modifica b
 void normalize_val(vec *a, vec* b){
-    float len_ = len(*a);
+    float len_ = sqrt(a->x * a->x + a->y*a->y);
+    if (len_ < 1e-8f) {
+        // b->x = 1.f;
+        // b->y = 0.f;
+        return;
+    }
     b->x = a->x / len_;
     b->y = a->y / len_;
     return;
@@ -135,7 +140,12 @@ void normalize_val(vec *a, vec* b){
 
 // normalizzazione di un vettore 2d, modifica a
 void normalize_ref(vec *a){
-    float len_ = len(*a);
+    float len_ = sqrt(a->x * a->x + a->y*a->y);
+    if (len_ < 1e-8f) {
+        // a->x = 1.f;
+        // a->y = 0.f;
+        return;
+    }
     a->x = a->x / len_;
     a->y = a->y / len_;
     return;

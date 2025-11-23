@@ -10,7 +10,7 @@ const Color LavanderBlue = {206, 216, 247};
 const Color ResolutionBlue = {0, 32, 130};
 
 // constants
-const int body_count = 10;             // number of bodies in the simulation
+const int body_count = 1000;             // number of bodies in the simulation
 const int framerate = 80;              // [fps] 
 const float speed = 10.0;               // [m/s] 
 /*******************************************************************************************/
@@ -115,8 +115,8 @@ void init_bodies(rigid_body* body_list, int body_count) {
 
         int n = rand() % 2;  // 0 = Circle, 1 = Box
         // int n = 1;
-        pos.x = -10.0f + (float)(rand() % 30 + 1);
-        pos.y = -10.0f + (float)(rand() % 30 + 1);
+        pos.x = (float) (-10.0f + (float)(rand() % 30 + 1));
+        pos.y = (float) (-10.0f + (float)(rand() % 30 + 1));
 
         Color randomColor = RandomColor();
 
@@ -130,6 +130,9 @@ void init_bodies(rigid_body* body_list, int body_count) {
             init_box_body(pos, 30, 30, 2, true, 2.0, 2.0, randomColor, &body_list[i]);
             break;
         }
+        // printf("body: %d , posx: %f ,  posy: %f\n", i, body_list[i].position.x, body_list[i].position.y);
+        // printf("%d %d\n", body_list[i].shape, i);
+
     }
 }
 

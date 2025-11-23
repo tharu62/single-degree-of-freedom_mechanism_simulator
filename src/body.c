@@ -1,6 +1,7 @@
 #include "body.h"
 
 float min(float a, float b) {
+    assert(a != NAN && b != NAN);
     if (a < b) {
         return a;
     } else {
@@ -20,6 +21,7 @@ void find_mean(vec_array* v, vec* v_out){
 }
 
 void move(rigid_body* body, vec amount){
+    assert(amount.x != NAN && amount.y != NAN);
     body->position.x += amount.x;
     body->position.y += amount.y;
     body->to_transform = true;
@@ -31,10 +33,9 @@ void move_to(rigid_body* body, vec new_position){
     body->to_transform = true;
 }
 
-// for polygons
 void project_vertices(vec_array* vertices, vec axis, float* min, float* max){
     for(int i=0; i<vertices->len; ++i){
-        vec v;
+        vec v = {0.f,0.f};
         v.x = vertices->array[i].x;
         v.y = vertices->array[i].y;
         float proj = dot_product(v , axis);
@@ -44,7 +45,6 @@ void project_vertices(vec_array* vertices, vec axis, float* min, float* max){
     return;
 }
 
-// for circles
 void project_circle(rigid_body* circle, vec axis, float* min, float* max){
     // project circle onto an axis: if axis is normalized then
     // projection is center dot axis +/- radius
@@ -57,9 +57,10 @@ void project_circle(rigid_body* circle, vec axis, float* min, float* max){
 }
 
 int find_closest_point_on_polygon(rigid_body* circle, rigid_body* polygon){
+    assert(circle->position.x != NAN && circle->position.y != NAN);
     int result = -1;
     float min_dist = __FLT_MAX__;
-    for(int i=0; i<polygon->vertices.len; ++i){
+    for(int i=0; i<polygon->transformed_vertices.len; ++i){
         vec v = polygon->transformed_vertices.array[i];
         float distance = dist(v, circle->position);
         if (distance < min_dist) {
@@ -68,13 +69,12 @@ int find_closest_point_on_polygon(rigid_body* circle, rigid_body* polygon){
         }
     }
     if (result == -1){
-        printf("error in finding the closest point to the circle");
+        printf("error in finding the closest point to the circle\n");
         exit(-1);
     }
     return result;
 }
 
-// separate axis theorem for polygons
 bool sat_polygons(vec_array* vertA, vec_array* vertB, vec *normal, float* depth){
     *normal = (vec){0.f,0.f};
     *depth = __FLT_MAX__;
@@ -149,7 +149,6 @@ bool sat_polygons(vec_array* vertA, vec_array* vertB, vec *normal, float* depth)
     return true;
 }
 
-// separating axis theorem for circles and polygons
 bool sat_circles_polygons(rigid_body* circle, rigid_body* polygon, vec* normal, float* depth){
     *normal = (vec){0.f,0.f};
     *depth = __FLT_MAX__;
@@ -216,11 +215,16 @@ bool sat_circles_polygons(rigid_body* circle, rigid_body* polygon, vec* normal, 
         *normal = (vec){-normal->x, -normal->y};
     }
 
+    if(normal->x == NAN || normal->y == NAN || *depth == NAN){
+        printf("error in calculating normal and depht");
+        exit(-1);
+    }
+
     return true;
 }
 
 bool circles_collide(rigid_body* circle1, rigid_body* circle2){
-    vec normal;
+    vec normal={0.f,0.f};
     sub_val(&circle2->position, &circle1->position, &normal);
     normalize_ref(&normal);
     float distance = dist(circle1->position, circle2->position);
@@ -228,10 +232,11 @@ bool circles_collide(rigid_body* circle1, rigid_body* circle2){
     if(distance < radii){ // collision
         return true;
     }
-    return false;
+    return false;           // no collision
 }
 
 void rotate(rigid_body* body, float amount){
+    assert(amount != NAN);
     body->rotation += amount;
     body->to_transform = true;
 }
@@ -265,13 +270,17 @@ void init_circle_body(vec position, float density, float mass, float restitution
     body->shape         = Circle;    
     body->color         = color;    
     body->position      = position;
+    body->linear_vel   = (vec){0.f,0.f};
     body->rotation      = 0.f;
+    body->rotational_vel = 0.f;
     body->density       = density;
     body->restitution   = restitution;
-    body->area          = radius * M_PI;
+    body->area          = radius * PI;
     body->static_       = static_;
     body->radius        = radius;
-    body->to_transform  = false;
+    body->width         = 0.f;
+    body->height        = 0.f;
+    body->to_transform  = true;
 
     if (mass != 0) 
         body->mass = mass;
@@ -324,13 +333,16 @@ void init_box_body(vec position, float density, float mass, float restitution, b
     body->shape         = Box;
     body->color         = color;    
     body->position      = position;
+    body->linear_vel   = (vec){0.f,0.f};
     body->rotation      = 0.f;
+    body->rotational_vel = 0.f;
     body->density       = density;
     body->restitution   = restitution;
     body->area          = width * height;
+    body->static_       = static_;
+    body->radius        = 0.f;
     body->width         = width;
     body->height        = height;
-    body->static_       = static_;
     body->to_transform  = true;
 
     if (mass != 0) 
@@ -380,21 +392,15 @@ void compute_collisions_circles(rigid_body* circle1, rigid_body* circle2){
 }
 
 void compute_collisions_polygons(rigid_body* bodyA, rigid_body* bodyB){
-
-    // for(int i=0; i<body_count; ++i){ 
-    //     vec normal;
-    //     float depth;
-    //     if(sat_polygons(&body->transformed_vertices, &body_list[i].transformed_vertices, &normal, &depth) && i!=this_polygon ){
-    //         move(body, (vec){-normal.x * depth / 2.f, -normal.y * depth / 2.f});
-    //         move(&body_list[i], (vec){normal.x * depth / 2.f, normal.y * depth / 2.f});
-    //     }
-    // }
-    vec normal;
-    float depth;
+    vec normal={0.f,0.f};
+    float depth=0.f;
     if(sat_polygons(&bodyA->transformed_vertices, &bodyB->transformed_vertices, &normal, &depth) ){
         move(bodyA, (vec){-normal.x * depth / 2.f, -normal.y * depth / 2.f});
         move(bodyB, (vec){normal.x * depth / 2.f, normal.y * depth / 2.f});
+        transform_vertices(bodyA);
+        transform_vertices(bodyB);
     }
+    return;
 }
 
 void compute_collisions_circles_polygon(rigid_body* circle, rigid_body* polygon){
@@ -402,44 +408,45 @@ void compute_collisions_circles_polygon(rigid_body* circle, rigid_body* polygon)
     float depth = 0.f;
     if(sat_circles_polygons(circle, polygon, &normal, &depth)){
         move(circle, (vec){-normal.x * depth / 2.f, -normal.y * depth / 2.f});
-        move(polygon, (vec){normal.x * depth / 2.f, normal.y * depth / 2.f});
+        move(polygon, (vec){normal.x * depth / 2.f, normal.y * depth / 2.f}); //only moves center of polygon
+        transform_vertices(polygon);
     }
     return;
 }
 
 /**
- * @todo more efficient updating method, ...
+ * @todo more efficient updating method ...
  */
 void compute_position(rigid_body* body_list, int body_count, float dt){
     
-    for(int i=0; i< body_count; ++i){
+    for(int i=0; i<body_count; ++i){
 
-        if (body_list[i].shape == Circle) {
-            for (int j=0; j<body_count; ++j) {
-                if (i!=j) {
+        for (int j=0; j<body_count; ++j) {
+
+            if (i!=j) {
+
+                if (body_list[i].shape == Circle) {
+
                     // i =  circle, j = circle
                     if (body_list[j].shape ==  Circle) {
                         compute_collisions_circles(&body_list[i], &body_list[j]);
                     }
-                    // i= cirlce, j = box
+                    
+                    // i= circle, j = box
                     if (body_list[j].shape == Box) {
+                        // printf("coll 1, index: %d\n", i);
                         compute_collisions_circles_polygon(&body_list[i], &body_list[j]);
                     }
                 }
-            }
-        }
 
-        if (body_list[i].shape == Box) {
-            
-            // updating input
-            // rotate(&body_list[i], (float) (PI / 2.f * dt));
-            transform_vertices(&body_list[i]);
+                if (body_list[i].shape == Box) {
 
-            // updating collisions
-            for (int j=0; j<body_count; ++j) {
-                if (i!=j) {
+                    // rotate(&body_list[i], (float) (PI / 2.f * dt));
+                    transform_vertices(&body_list[i]);
+                    
                     // i = box, j = circle
                     if (body_list[j].shape ==  Circle) {
+                        // printf("coll 2\n");
                         compute_collisions_circles_polygon(&body_list[j], &body_list[i]);
                     }
                     // i = box, j = box
@@ -448,8 +455,8 @@ void compute_position(rigid_body* body_list, int body_count, float dt){
                     }
                 }
             }
+        
         }
-
     }
 
     return;
