@@ -1,13 +1,13 @@
 #include "draw.h"
 #include <stdlib.h>
 
-void draw (Camera2D* camera, rigid_body* body_list, int body_count) {
+void draw_outline (Camera2D* camera, rigid_body* body_list, int body_count) {
 
     for (int i = 0; i < body_count; ++i) {
         switch (body_list[i].shape)
         {
         case Circle:
-            DrawCircleV((vec){body_list[i].position.x,-body_list[i].position.y}, body_list[i].radius, body_list[i].color);
+            DrawRing((Vector2){body_list[i].position.x, -body_list[i].position.y}, body_list[i].radius - 0.05f, body_list[i].radius, 0.0f, 360.0f, 36, body_list[i].color);
             break;
 
         case Box:
@@ -95,3 +95,30 @@ void draw (Camera2D* camera, rigid_body* body_list, int body_count) {
     free(colliding);
     return;
  }
+
+
+void draw_filled (Camera2D* camera, rigid_body* body_list, int body_count) {
+    for (int i = 0; i < body_count; ++i) {
+        switch (body_list[i].shape) {
+            case Circle:
+                DrawCircleV((vec){body_list[i].position.x, -body_list[i].position.y}, body_list[i].radius, body_list[i].color);
+                break;
+            case Box: {
+                
+                // Rectangle positioned so its top-left is at (posX, posY)
+                // This makes the center of the rectangle at (posX + width/2, posY + height/2)
+                Rectangle rect = {body_list[i].position.x, -body_list[i].position.y, body_list[i].width, body_list[i].height};
+                
+                // Origin is at the center of the rectangle (relative to rect's top-left)
+                Vector2 origin = {body_list[i].width / 2.0f, body_list[i].height / 2.0f};
+                
+                // Draw filled rotated rectangle
+                DrawRectanglePro(rect, origin, body_list[i].rotation * (180.0f / 3.14159265359f), body_list[i].color);
+
+            } break;
+            default:
+                break;
+        }
+    }
+    return;
+}

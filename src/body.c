@@ -1,6 +1,6 @@
 #include "body.h"
 
-#define e 0.3f // constant that defines the elasticity of the collision ( e = 0 -> ure elastic collision, e = 1 -> pure anelastic collision)
+#define e 0.f // constant that defines the elasticity of the collision ( e = 0 -> pure elastic collision, e = 1 -> pure anelastic collision)
 
 float min(float a, float b) {
     assert(a != NAN && b != NAN);
@@ -140,7 +140,7 @@ bool sat_polygons(vec_array* vertA, vec_array* vertB, vec *normal, float* depth)
         }
     }
     // normal is already one of the separating axes (normalized)
-    normalize_ref(normal);
+    // normalize_ref(normal);
 
     vec centerA, centerB;
     find_mean(vertA, &centerA);
@@ -210,7 +210,7 @@ bool sat_circles_polygons(rigid_body* circle, rigid_body* polygon, vec* normal, 
     }
 
     // normal is stored already normalized
-    normalize_ref(normal);
+    // normalize_ref(normal);
 
     vec polygon_center;
     find_mean(&polygon->transformed_vertices, &polygon_center);
@@ -374,32 +374,46 @@ void init_box_body(vec position, float density, float mass, float restitution, b
 }
 
 void compute_collisions_circles(rigid_body* circle1, rigid_body* circle2){
-    if (!circles_collide(circle1, circle2)) return; 
+    if (!circles_collide(circle1, circle2)) return;
     vec normal;
     sub_val(&circle2->position, &circle1->position, &normal);
-    normalize_ref(&normal);
-    float distance = dist(circle1->position, circle2->position);
+    float distance = len(normal);
+    if (distance == 0.f) {
+        normal = (vec){1.f, 0.f};
+    } else {
+        div_const_ref(&normal, distance);
+    }
     float radii = circle1->radius + circle2->radius;
     float depth = radii - distance;
+    if (depth <= 0.f) return;
 
-    if(distance < radii){ // collision
-        vec temp1;
-        vec temp2;
-        mult_const_val(&normal, -depth, &temp1);
-        div_const_ref(&temp1, 2.f);
-        mult_const_val(&normal, depth, &temp2);
-        div_const_ref(&temp2, 2.f);
+    float inv_mass1 = circle1->static_ ? 0.f : 1.f / circle1->mass;
+    float inv_mass2 = circle2->static_ ? 0.f : 1.f / circle2->mass;
+    float inv_mass_sum = inv_mass1 + inv_mass2;
 
-        float v_rel = dot_product((vec){circle2->linear_vel.x - circle1->linear_vel.x, circle2->linear_vel.y - circle1->linear_vel.y}, normal);
-        float j = - ((1 + e) * v_rel) / (1/circle1->mass + 1/circle2->mass) ;
+    float v_rel = dot_product((vec){circle2->linear_vel.x - circle1->linear_vel.x, circle2->linear_vel.y - circle1->linear_vel.y}, normal);
+    if (v_rel > 0.f) return; // already separating
 
-        move(circle1, temp1);
-        // mult_const_val(&(vec){-normal.x, -normal.y}, len(circle1->linear_vel), &circle1->linear_vel); 
-        sum_ref(&circle1->linear_vel, &(vec){-normal.x*j/circle1->mass, -normal.y*j/circle1->mass});
+    float e_eff = min(circle1->restitution, circle2->restitution);
 
-        move(circle2, temp2);
-        // mult_const_val(&normal, len(circle2->linear_vel), &circle2->linear_vel);
-        sum_ref(&circle2->linear_vel, &(vec){normal.x*j/circle2->mass, normal.y*j/circle2->mass});
+    // positional correction (slop + percent) to avoid jitter
+    float slop = 0.01f;
+    float percent = 0.8f;
+    float correction_mag = 0.f;
+    if (depth > slop) correction_mag = (depth - slop) * percent;
+    if (inv_mass_sum > 0.f && correction_mag > 0.f) {
+        vec move1 = {0.f, 0.f};
+        vec move2 = {0.f, 0.f};
+        mult_const_val(&normal, -correction_mag * (inv_mass1 / inv_mass_sum), &move1);
+        mult_const_val(&normal,  correction_mag * (inv_mass2 / inv_mass_sum), &move2);
+        if (!circle1->static_) move(circle1, move1);
+        if (!circle2->static_) move(circle2, move2);
+    }
+
+    if (inv_mass_sum > 0.f) {
+        float j = - ((1 + e_eff) * v_rel) / inv_mass_sum;
+        if (!circle1->static_) sum_ref(&circle1->linear_vel, &(vec){-normal.x * j * inv_mass1, -normal.y * j * inv_mass1});
+        if (!circle2->static_) sum_ref(&circle2->linear_vel, &(vec){ normal.x * j * inv_mass2,  normal.y * j * inv_mass2});
     }
     return;
 }
@@ -407,21 +421,33 @@ void compute_collisions_circles(rigid_body* circle1, rigid_body* circle2){
 void compute_collisions_polygons(rigid_body* bodyA, rigid_body* bodyB){
     vec normal={0.f,0.f};
     float depth=0.f;
-    if(sat_polygons(&bodyA->transformed_vertices, &bodyB->transformed_vertices, &normal, &depth) ){
-        
-        float v_rel = dot_product((vec){bodyB->linear_vel.x - bodyA->linear_vel.x, bodyB->linear_vel.y - bodyA->linear_vel.y}, normal);
-        float j = - ((1 + e) * v_rel) / (1/bodyA->mass + 1/bodyB->mass) ;
+    if(sat_polygons(&bodyA->transformed_vertices, &bodyB->transformed_vertices, &normal, &depth) ){     //collision detected
+        float inv_massA = bodyA->static_ ? 0.f : 1.f / bodyA->mass;
+        float inv_massB = bodyB->static_ ? 0.f : 1.f / bodyB->mass;
+        float inv_mass_sum = inv_massA + inv_massB;
 
-        move(bodyA, (vec){-normal.x * depth / 2.f, -normal.y * depth / 2.f});
-        // mult_const_val(&(vec){-normal.x, -normal.y}, len(bodyA->linear_vel), &bodyA->linear_vel);
-        sum_ref(&bodyA->linear_vel, &(vec){-normal.x*j/bodyA->mass, -normal.y*j/bodyA->mass});
-        
-        move(bodyB, (vec){normal.x * depth / 2.f, normal.y * depth / 2.f});
-        // mult_const_val(&normal, len(bodyB->linear_vel), &bodyB->linear_vel);
-        sum_ref(&bodyB->linear_vel, &(vec){normal.x*j/bodyB->mass, normal.y*j/bodyB->mass});
-        
-        transform_vertices(bodyA);
-        transform_vertices(bodyB);
+        float v_rel = dot_product((vec){bodyB->linear_vel.x - bodyA->linear_vel.x, bodyB->linear_vel.y - bodyA->linear_vel.y}, normal);
+        if (v_rel > 0.f) return;
+
+        float e_eff = min(bodyA->restitution, bodyB->restitution);
+
+        float slop = 0.01f;
+        float percent = 0.8f;
+        float correction_mag = 0.f;
+        if (depth > slop) correction_mag = (depth - slop) * percent;
+        if (inv_mass_sum > 0.f && correction_mag > 0.f) {
+            if (!bodyA->static_) move(bodyA, (vec){-normal.x * correction_mag * (inv_massA / inv_mass_sum), -normal.y * correction_mag * (inv_massA / inv_mass_sum)});
+            if (!bodyB->static_) move(bodyB, (vec){ normal.x * correction_mag * (inv_massB / inv_mass_sum),  normal.y * correction_mag * (inv_massB / inv_mass_sum)});
+        }
+
+        if (inv_mass_sum > 0.f) {
+            float j = - ((1 + e_eff) * v_rel) / inv_mass_sum;
+            if (!bodyA->static_) sum_ref(&bodyA->linear_vel, &(vec){-normal.x * j * inv_massA, -normal.y * j * inv_massA});
+            if (!bodyB->static_) sum_ref(&bodyB->linear_vel, &(vec){ normal.x * j * inv_massB,  normal.y * j * inv_massB});
+        }
+
+        if (!bodyA->static_) transform_vertices(bodyA);
+        if (!bodyB->static_) transform_vertices(bodyB);
     }
     return;
 }
@@ -429,82 +455,89 @@ void compute_collisions_polygons(rigid_body* bodyA, rigid_body* bodyB){
 void compute_collisions_circles_polygon(rigid_body* circle, rigid_body* polygon){
     vec normal = {0.f,0.f};
     float depth = 0.f;
-    if(sat_circles_polygons(circle, polygon, &normal, &depth)){
+    if(sat_circles_polygons(circle, polygon, &normal, &depth)){     //collision detected
+
+        float inv_mass_circle = circle->static_ ? 0.f : 1.f / circle->mass;
+        float inv_mass_polygon = polygon->static_ ? 0.f : 1.f / polygon->mass;
+        float inv_mass_sum = inv_mass_circle + inv_mass_polygon;
+
         float v_rel = dot_product((vec){polygon->linear_vel.x - circle->linear_vel.x, polygon->linear_vel.y - circle->linear_vel.y}, normal);
-        float j = - ((1 + e) * v_rel) / (1/polygon->mass + 1/circle->mass) ;
-        
-        move(circle, (vec){-normal.x * depth / 2.f, -normal.y * depth / 2.f});
-        // mult_const_val(&(vec){-normal.x, -normal.y}, len(circle->linear_vel), &circle->linear_vel);
-        sum_ref(&circle->linear_vel, &(vec){-normal.x*j/circle->mass, -normal.y*j/circle->mass});
-        
-        move(polygon, (vec){normal.x * depth / 2.f, normal.y * depth / 2.f}); //only moves center of polygon
-        // mult_const_val(&normal, len(polygon->linear_vel), &polygon->linear_vel);
-        sum_ref(&polygon->linear_vel, &(vec){normal.x*j/polygon->mass, normal.y*j/polygon->mass});
-        
-        transform_vertices(polygon);
+        if (v_rel > 0.f) return;
+
+        float e_eff = min(circle->restitution, polygon->restitution);
+
+        float slop = 0.01f;
+        float percent = 0.8f;
+        float correction_mag = 0.f;
+        if (depth > slop) correction_mag = (depth - slop) * percent;
+        if (inv_mass_sum > 0.f && correction_mag > 0.f) {
+            if (!circle->static_) move(circle, (vec){-normal.x * correction_mag * (inv_mass_circle / inv_mass_sum), -normal.y * correction_mag * (inv_mass_circle / inv_mass_sum)});
+            if (!polygon->static_) move(polygon, (vec){ normal.x * correction_mag * (inv_mass_polygon / inv_mass_sum),  normal.y * correction_mag * (inv_mass_polygon / inv_mass_sum)});
+        }
+
+        if (inv_mass_sum > 0.f) {
+            float j = - ((1 + e_eff) * v_rel) / inv_mass_sum;
+            if (!circle->static_) sum_ref(&circle->linear_vel, &(vec){-normal.x * j * inv_mass_circle, -normal.y * j * inv_mass_circle});
+            if (!polygon->static_) sum_ref(&polygon->linear_vel, &(vec){ normal.x * j * inv_mass_polygon,  normal.y * j * inv_mass_polygon});
+        }
+
+        if (!polygon->static_) transform_vertices(polygon);
     }
     return;
 }
 
-void compute_forces_and_inertia_step(rigid_body* body, float dt){
-    // trasaltion
-    vec force_impulse = (vec){0.f,0.f};
-    mult_const_val(&body->force, dt, &force_impulse); // update linear velocity of the body with forces
-    sum_ref(&body->linear_vel, &force_impulse);
-    vec amount = {0.f,0.f}; 
-    mult_const_val(&body->linear_vel, dt, &amount);
-    move(body, amount);                                                    // move the body of (velocity * dt) amount
-    transform_vertices(body);                                          // update vertices position
-    
-    // rotation
-    body->rotational_vel += body->rotational_vel * dt;      // update rotational velocity of the body
-    rotate(body, body->rotational_vel*dt);                       // rotate the body  
-    // rotate(&body_list[i], (float) (PI / 2.f * dt));
+/**
+ * @todo forces...
+ */
+void compute_forces_and_inertia_step(rigid_body* body, float dt){                   
+    // translation: integrate forces -> acceleration -> velocity
+    if (body->mass > 0.f) {
+        vec acceleration = body->force;
+        div_const_ref(&acceleration, body->mass); // acceleration = force / mass
+        vec dv = {0.f, 0.f};
+        mult_const_val(&acceleration, dt, &dv);
+        sum_ref(&body->linear_vel, &dv);
+    }
 
-    body->force = (vec){0.f, 0.f};                                       // reset forces 
+    // move by velocity
+    vec amount = {0.f,0.f};
+    mult_const_val(&body->linear_vel, dt, &amount);
+    move(body, amount);
+    transform_vertices(body);
+
+    // rotation
+    rotate(body, body->rotational_vel * dt);
+
+    // reset forces after integration
+    body->force = (vec){0.f, 0.f};
 }
 
 /**
  * @todo more efficient updating method ...
  */
 void compute_position(rigid_body* body_list, int body_count, float dt){
-    
-    for(int i=0; i<body_count; ++i){
+    // First: integrate forces/velocities for all bodies
+    for (int i = 0; i < body_count; ++i) {
+        if (!body_list[i].static_) compute_forces_and_inertia_step(&body_list[i], dt);
+    }
 
-        /****************** compute movement from inertia and forces *************/
-        compute_forces_and_inertia_step(&body_list[i], dt);
-        /**********************************************************************/
-
-        /************************* compute collisions ****************************/
-        for (int j=0; j<body_count; ++j) {
-
-            if (i!=j) {
-
-                if (body_list[i].shape == Circle) {
-                    // i =  circle, j = circle
-                    if (body_list[j].shape ==  Circle) {
-                        compute_collisions_circles(&body_list[i], &body_list[j]);
-                    }
-                    // i= circle, j = box
-                    if (body_list[j].shape == Box) {
-                        compute_collisions_circles_polygon(&body_list[i], &body_list[j]);
-                    }
+    // Second: resolve collisions for each unordered pair once
+    for (int i = 0; i < body_count; ++i) {
+        for (int j = i + 1; j < body_count; ++j) {
+            if (body_list[i].shape == Circle) {
+                if (body_list[j].shape == Circle) {
+                    compute_collisions_circles(&body_list[i], &body_list[j]);
+                } else if (body_list[j].shape == Box) {
+                    compute_collisions_circles_polygon(&body_list[i], &body_list[j]);
                 }
-
-                if (body_list[i].shape == Box) {
-                    // i = box, j = circle
-                    if (body_list[j].shape ==  Circle) {
-                        compute_collisions_circles_polygon(&body_list[j], &body_list[i]);
-                    }
-                    // i = box, j = box
-                    if (body_list[j].shape == Box) {
-                        compute_collisions_polygons(&body_list[i], &body_list[j]);
-                    }
+            } else if (body_list[i].shape == Box) {
+                if (body_list[j].shape == Circle) {
+                    compute_collisions_circles_polygon(&body_list[j], &body_list[i]);
+                } else if (body_list[j].shape == Box) {
+                    compute_collisions_polygons(&body_list[i], &body_list[j]);
                 }
             }
-        
         }
-        /******************************************************************* */
     }
 
     return;

@@ -1,6 +1,6 @@
 # Variables
 CC = gcc
-CFLAGS = -Wall -O2
+CFLAGS = -Wall -O3
 SRC_DIR = src
 BUILD_DIR = build
 INCL_DIR = include

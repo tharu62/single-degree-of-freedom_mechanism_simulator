@@ -1,0 +1,21 @@
+
+0) Precise and consistent simulation of 2d object physics with realistic collisions, forces, torque, ecc.. 
+    The objects are not just circles, boxes and polygons but also special shapes with verteces.
+
+1) The object of special shapes drawn on screen must be described in a .csv file with a list of verteces centered on origin 
+    and not in absolute position. 
+    In the same file there must be the values of initialization of the object :
+        - position
+        - velocity
+        - acceleartion
+        - mass
+        - density
+        - ...
+
+2) Allow the simulation to stop and display the instance of the objects.
+    This mean that the program should have a "frame by frame" mode in which time is flowing a step at at time 
+    and the single step is fixed, the step update is triggered with the user input by keyboard. 
+    Each step should rappresent  a complete instance of the system with energy, forces, velocities ecc.. all rappresented
+    on a legend. 
+
+3) Make an internal console for dynamic modification of single instances of the object.

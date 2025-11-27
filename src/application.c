@@ -30,6 +30,9 @@ void PhysicsEngineRun()
     rigid_body* body_list = malloc(sizeof(rigid_body)*body_count);
     init_bodies(body_list, body_count);
 
+    body_list[0].static_ = false;
+    body_list[0].color = WHITE;
+
     SetTargetFPS(framerate);                   // Set to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
@@ -55,7 +58,8 @@ void PhysicsEngineRun()
             // drawing on camera
             BeginMode2D(camera);
 
-                draw(&camera, body_list, body_count);
+                // draw_outline(&camera, body_list, body_count);
+                draw_filled(&camera, body_list, body_count);
                 // draw_with_sat_detection(&camera, body_list, body_count);
 
             EndMode2D();
@@ -109,19 +113,29 @@ void init_bodies(rigid_body* body_list, int body_count) {
 
         int n = rand() % 2;  // 0 = Circle, 1 = Box
         // int n = 1;
+        bool static_;
+        Color randomColor; 
+        if(rand()%2 == 1){
+            static_ = true;
+            randomColor = RED;
+        }
+        else{
+            static_ = false;
+            randomColor = RandomColor();
+        }
         pos.x = (float) (-10.0f + (float)(rand() % 30 + 1));
         pos.y = (float) (-10.0f + (float)(rand() % 30 + 1));
 
-        Color randomColor = RandomColor();
+        
 
         switch (n)
         {
         case Circle:
-            init_circle_body(pos, 30, 30, 2, true, 1, randomColor, &body_list[i]);
+            init_circle_body(pos, 30, 30, 0.5, static_, 1, randomColor, &body_list[i]);
             break;
 
         case Box:
-            init_box_body(pos, 30, 30, 2, true, 2.0, 2.0, randomColor, &body_list[i]);
+            init_box_body(pos, 30, 30, 0.5, static_, 2.0, 2.0, randomColor, &body_list[i]);
             break;
         }
         // printf("body: %d , posx: %f ,  posy: %f\n", i, body_list[i].position.x, body_list[i].position.y);
